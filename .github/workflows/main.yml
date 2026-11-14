@@ -1,0 +1,104 @@
+name: Build MT6580 Kernel
+
+on:
+  workflow_dispatch:
+    inputs:
+      defconfig:
+        description: 'Defconfig name'
+        required: true
+        default: 'k80hd_bsp_fwv_512m_defconfig'
+  push:
+    branches:
+      - master
+      - main
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+
+jobs:
+  build:
+    name: Build Kernel for Tecno Pop 4 Air (BC1)
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout Kernel Source
+        uses: actions/checkout@v4
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            bc \
+            bison \
+            build-essential \
+            ccache \
+            curl \
+            flex \
+            gcc-multilib \
+            git \
+            gnupg \
+            gperf \
+            libncurses5 \
+            libncurses5-dev \
+            libssl-dev \
+            lzop \
+            make \
+            u-boot-tools \
+            zip \
+            zlib1g-dev \
+            python3
+
+      - name: Download Toolchain (Google GCC 4.9 ARM)
+        run: |
+          git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 -b android-10.0.0_r47 $GITHUB_WORKSPACE/toolchain
+
+      - name: Configure Kernel
+        run: |
+          export ARCH=arm
+          export SUBARCH=arm
+          export CROSS_COMPILE=$GITHUB_WORKSPACE/toolchain/bin/arm-linux-androideabi-
+          export PATH=$GITHUB_WORKSPACE/toolchain/bin:$PATH
+          
+          DEFCONFIG="${{ github.event.inputs.defconfig || 'k80hd_bsp_fwv_512m_defconfig' }}"
+          echo "Using defconfig: $DEFCONFIG"
+          make O=out $DEFCONFIG
+
+      - name: Compile Kernel
+        run: |
+          export ARCH=arm
+          export SUBARCH=arm
+          export CROSS_COMPILE=$GITHUB_WORKSPACE/toolchain/bin/arm-linux-androideabi-
+          export PATH=$GITHUB_WORKSPACE/toolchain/bin:$PATH
+          
+          make -j$(nproc --all) O=out
+
+      - name: Prepare Build Artifacts
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/artifacts
+          
+          if [ -f out/arch/arm/boot/zImage-dtb ]; then
+            cp out/arch/arm/boot/zImage-dtb $GITHUB_WORKSPACE/artifacts/
+            echo "Copied zImage-dtb"
+          fi
+          
+          if [ -f out/arch/arm/boot/zImage ]; then
+            cp out/arch/arm/boot/zImage $GITHUB_WORKSPACE/artifacts/
+            echo "Copied zImage"
+          fi
+          
+          if [ -f out/arch/arm/boot/dts/mt6580.dtb ]; then
+            cp out/arch/arm/boot/dts/mt6580.dtb $GITHUB_WORKSPACE/artifacts/
+            echo "Copied mt6580.dtb"
+          fi
+          
+          if [ -f out/vmlinux ]; then
+            cp out/vmlinux $GITHUB_WORKSPACE/artifacts/
+            echo "Copied vmlinux"
+          fi
+
+      - name: Upload Kernel Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tecno_Pop4_Air_Kernel_Build
+          path: artifacts/*
+          if-no-files-found: error
