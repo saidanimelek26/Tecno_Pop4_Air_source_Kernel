@@ -38,8 +38,8 @@ jobs:
             git \
             gnupg \
             gperf \
-            libncurses5 \
-            libncurses5-dev \
+            libncurses6 \
+            libncurses-dev \
             libssl-dev \
             lzop \
             make \
