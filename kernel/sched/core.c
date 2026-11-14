@@ -6076,9 +6076,13 @@ int __sched_deisolate_cpu_unlocked(int cpu)
 	sched_update_group_capacities(cpu);
 
 	if (cpu_online(cpu)) {
+#ifdef CONFIG_NO_HZ_COMMON
 		/* Kick CPU to immediately do load balancing */
 		if (!test_and_set_bit(NOHZ_BALANCE_KICK, nohz_flags(cpu)))
 			smp_send_reschedule(cpu);
+#else
+		smp_send_reschedule(cpu);
+#endif
 	}
 
 out:
