@@ -27,9 +27,11 @@
 /*************************************************
  * WARNING:AVOID_EXTERNS: externs should be avoided in .c files
  *************************************************/
+#ifdef CONFIG_MTK_IMGSENSOR
 extern void ISP_MCLK1_GPIO_EN(bool En);
 extern void ISP_MCLK2_GPIO_EN(bool En);
 #define ENABLE_KD_SENSORLIST
+#endif
 
 /* 89serial IC , for HW FBC */
 #define _89SERIAL_

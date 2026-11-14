@@ -23,6 +23,7 @@
 #include <linux/module.h>
 #include <linux/miscdevice.h>	/* for misc_register, and SYNTH_MINOR */
 #include <linux/proc_fs.h>
+#include <linux/uaccess.h>
 
 #ifdef CONFIG_TRACING
 #include <linux/kallsyms.h>

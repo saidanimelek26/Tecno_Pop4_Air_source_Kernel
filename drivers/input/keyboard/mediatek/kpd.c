@@ -15,7 +15,7 @@
  */
 
 #include "kpd.h"
-#ifdef CONFIG_PM_WAKELOCKS
+#if defined(CONFIG_PM_WAKELOCKS) || 1
 #include <linux/pm_wakeup.h>
 #else
 #include <linux/wakelock.h>
@@ -41,7 +41,7 @@ static u32 kpd_keymap[KPD_NUM_KEYS];
 static u16 kpd_keymap_state[KPD_NUM_MEMS];
 
 struct input_dev *kpd_input_dev;
-#ifdef CONFIG_PM_WAKELOCKS
+#if defined(CONFIG_PM_WAKELOCKS) || 1
 struct wakeup_source kpd_suspend_lock;
 #else
 struct wake_lock kpd_suspend_lock;
@@ -172,7 +172,7 @@ static void kpd_keymap_handler(unsigned long data)
 	void *dest;
 
 	kpd_get_keymap_state(new_state);
-#ifdef CONFIG_PM_WAKELOCKS
+#if defined(CONFIG_PM_WAKELOCKS) || 1
 	__pm_wakeup_event(&kpd_suspend_lock, 500);
 #else
 	wake_lock_timeout(&kpd_suspend_lock, HZ / 2);
@@ -396,7 +396,7 @@ static int kpd_pdrv_probe(struct platform_device *pdev)
 		kpd_notice("register input device failed (%d)\n", err);
 		return err;
 	}
-#ifdef CONFIG_PM_WAKELOCKS
+#if defined(CONFIG_PM_WAKELOCKS) || 1
 	wakeup_source_init(&kpd_suspend_lock, "kpd wakelock");
 #else
 	wake_lock_init(&kpd_suspend_lock, WAKE_LOCK_SUSPEND, "kpd wakelock");

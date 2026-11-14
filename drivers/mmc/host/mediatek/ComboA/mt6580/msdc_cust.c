@@ -408,7 +408,7 @@ void msdc_select_clksrc(struct msdc_host *host, int clksrc)
 static void msdc_dump_clock_sts_core(char **buff, unsigned long *size,
 	struct seq_file *m, struct msdc_host *host)
 {
-	char buffer[1024];
+	char buffer[256];
 	char *buf_ptr = buffer;
 
 	if (topckgen_base) {

@@ -159,7 +159,7 @@ static void push_table(struct LCM_setting_table *table, unsigned int count)
 static void lcm_set_util_funcs(const struct LCM_UTIL_FUNCS *util)
 {
 	
-	memcpy(&lcm_util, util, sizeof(LCM_UTIL_FUNCS));
+	memcpy(&lcm_util, util, sizeof(struct LCM_UTIL_FUNCS));
 }
 
 /* ------------------------------------------------------------------ */
@@ -168,7 +168,7 @@ static void lcm_set_util_funcs(const struct LCM_UTIL_FUNCS *util)
 
 static void lcm_get_params(struct LCM_PARAMS *params)
 {
-	memset(params, 0, sizeof(LCM_PARAMS));
+	memset(params, 0, sizeof(struct LCM_PARAMS));
 
 	params->type = LCM_TYPE_DSI;
 
@@ -236,7 +236,6 @@ static void lcm_init(void)
 
 static void lcm_suspend(void)
 {
-	unsigned int array[1];
 
 	push_table(lcm_suspend_setting,
 		   sizeof(lcm_suspend_setting) / sizeof(struct LCM_setting_table));

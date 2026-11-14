@@ -12,5 +12,9 @@
 
 ifeq ($(CONFIG_MICROTRUST_TEE_SUPPORT), y)
 $(info "CONFIG_MICROTRUST_TEE_VERSION=$(CONFIG_MICROTRUST_TEE_VERSION)")
+ifneq ($(wildcard $(srctree)/$(src)/$(subst ",,$(CONFIG_MICROTRUST_TEE_VERSION))),)
 obj-y += $(subst ",,$(CONFIG_MICROTRUST_TEE_VERSION))/
+else
+obj- += dummy.o
+endif
 endif

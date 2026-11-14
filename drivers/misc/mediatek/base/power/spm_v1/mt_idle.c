@@ -1085,6 +1085,13 @@ void defeature_soidle_by_display(void)
 EXPORT_SYMBOL(defeature_soidle_by_display);
 #endif
 
+#if defined(CONFIG_MICROTRUST_TEE_SUPPORT)
+int __attribute__((weak)) is_teei_ready(void)
+{
+	return 1;
+}
+#endif
+
 static bool soidle_can_enter(int cpu)
 {
 	int reason = NR_REASONS;

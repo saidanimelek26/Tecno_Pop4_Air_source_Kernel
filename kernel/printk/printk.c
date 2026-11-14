@@ -68,9 +68,9 @@ static u64 overflow_gap;
  * 1: uart printk disable
  * 2: uart printk always enable
  */
-int printk_disable_uart;
-
-module_param_named(disable_uart, printk_disable_uart, int, 0644);
+int printk_disable_uart = 0;
+static int dummy_disable_uart;
+module_param_named(disable_uart, dummy_disable_uart, int, 0644);
 
 bool mt_get_uartlog_status(void)
 {
@@ -92,9 +92,7 @@ void set_uartlog_status(bool value)
 #ifdef CONFIG_MTK_PRINTK_UART_CONSOLE
 void mt_disable_uart(void)
 {
-	/* uart print not always enable */
-	if ((mt_need_uart_console != 1) && (printk_disable_uart != 2))
-		printk_disable_uart = 1;
+	printk_disable_uart = 0;
 }
 void mt_enable_uart(void)
 {
@@ -1337,7 +1335,7 @@ void __init setup_log_buf(int early)
 		free, (free * 100) / __LOG_BUF_LEN);
 }
 
-static bool __read_mostly ignore_loglevel;
+static bool __read_mostly ignore_loglevel = true;
 
 static int __init ignore_loglevel_setup(char *str)
 {
@@ -1899,7 +1897,7 @@ static void call_console_drivers(int level,
 
 	for_each_console(con) {
 		/* if uart printk disabled */
-		if ((printk_disable_uart == 1) && (con->flags & CON_CONSDEV))
+		if (0 && (printk_disable_uart == 1) && (con->flags & CON_CONSDEV))
 			continue;
 		if (exclusive_console && con != exclusive_console)
 			continue;
