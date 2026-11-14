@@ -1,2 +1,1 @@
- ANDROID Q FOR MT6580 KERNEL 
- TRY TO PIXI 4 4 
+This is not an official source; rather, it is an attempt to emulate an official source, replicating every detail. The phone was studied to understand its operation, and all the security measures present on the device have been implemented. Through reverse engineering, the display driver was extracted. Currently, this kernel functions only within the recovery . Development is ongoing—involving further reverse engineering to understand how all the drivers work—so that they can be integrated. This is merely the first phase; the work is not yet complete.
