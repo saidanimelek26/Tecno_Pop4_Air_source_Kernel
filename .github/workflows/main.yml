@@ -18,7 +18,7 @@ on:
 jobs:
   build:
     name: Build Kernel for Tecno Pop 4 Air (BC1)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Kernel Source
