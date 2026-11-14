@@ -52,9 +52,15 @@ struct LCM_DRIVER *lcm_driver_list[] = {
 #if defined(HX8379C_WVGA_DSI_VDO_TDT_PIXI44)
 	&hx8379c_wvga_dsi_vdo_TDT_lcm_drv_pixi44,
 #endif
+#if defined(ST7703_HDMINUS_DSI_VDO_DEZHIXIN_VP650)
+	&st7703_hdminus_dsi_vdo_dezhixin_vp650,
+#endif
 };
 
 unsigned char lcm_name_list[][128] = {
+#if defined(ST7703_HDMINUS_DSI_VDO_DEZHIXIN_VP650)
+	"st7703_hdminus_dsi_vdo_dezhixin_vp650_lcm_drv",
+#endif
 #if defined(HX8392A_DSI_CMD)
 	"hx8392a_dsi_cmd",
 #endif
