@@ -5891,7 +5891,7 @@ ssize_t slabinfo_write(struct file *file, const char __user *buffer,
 	return -EIO;
 }
 
-#ifdef CONFIG_MTK_MEMCFG
+#if defined(CONFIG_MTK_MEMCFG) && defined(CONFIG_STACKTRACE)
 static int mtk_memcfg_add_location(struct loc_track *t, struct kmem_cache *s,
 				const struct track *track)
 {
@@ -6117,6 +6117,11 @@ static int mtk_memcfg_slabtrace_show(struct seq_file *m, void *p)
 int slabtrace_open(struct inode *inode, struct file *file)
 {
 	return single_open(file, mtk_memcfg_slabtrace_show, NULL);
+}
+#elif defined(CONFIG_MTK_MEMCFG)
+int slabtrace_open(struct inode *inode, struct file *file)
+{
+	return -EIO;
 }
 #endif
 #endif /* CONFIG_SLABINFO */
