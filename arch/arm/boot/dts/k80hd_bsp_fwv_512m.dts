@@ -547,5 +547,5 @@
 };
 /* CONSYS end */
 
-#include <k80hd_bsp_fwv_512m/cust.dtsi>
+/* #include <k80hd_bsp_fwv_512m/cust.dtsi> */
 /*End of this file, DO NOT ADD ANYTHING HERE*/
