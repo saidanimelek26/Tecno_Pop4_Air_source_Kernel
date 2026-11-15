@@ -1,0 +1,3 @@
+config SAGEREAL_CAMERA_ASSISTANT_DRV
+	bool "Sagereal camera assistant driver"
+	default n

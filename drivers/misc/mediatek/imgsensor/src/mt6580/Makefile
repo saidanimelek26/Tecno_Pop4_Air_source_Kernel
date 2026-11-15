@@ -41,6 +41,7 @@ endif
 
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/imgsensor/inc/
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/imgsensor/src/$(MTK_PLATFORM)/camera_hw/
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/
 
 $(foreach drv,$(subst $\",,$(CONFIG_CUSTOM_KERNEL_IMGSENSOR)),$(eval $(call FILTER_PROJECT_DRV,$(drv))))
 custom_kernel_imgsensor_by_platform := $(addsuffix /, $(shell echo $(platform_drv)))

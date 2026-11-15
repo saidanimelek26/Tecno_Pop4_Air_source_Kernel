@@ -273,6 +273,14 @@
 #define GC0310_SENSOR_ID                        0xa310
 #define GC0313MIPI_YUV_SENSOR_ID                0xD0
 #define GC0312_SENSOR_ID                        0xb310
+#define GC5035_SENSOR_ID                        0x5035
+#define GC5035_1_SENSOR_ID                      0x5033
+#define GC5035_M_1_BK_SENSOR_ID                 0x5038
+#define GC5035_M_1_WT_SENSOR_ID                 0x5039
+#define GC5036_SENSOR_ID                        0x5036
+#define GC5036_1_SENSOR_ID                      0x5037
+#define GC5035_S_1_BK_SENSOR_ID                 0x503a
+#define GC5035_S_1_WT_SENSOR_ID                 0x503b
 /*SP*/
 #define SP0A19_YUV_SENSOR_ID                    0xA6
 #define SP2518_YUV_SENSOR_ID                    0x53
@@ -456,6 +464,14 @@
 #define SENSOR_DRVNAME_GC0310_YUV               "gc0310_yuv"
 #define SENSOR_DRVNAME_GC0312_YUV               "gc0312_yuv"
 #define SENSOR_DRVNAME_GC0313MIPI_YUV           "gc0313_mipi_yuv"
+#define SENSOR_DRVNAME_GC5035_MIPI_RAW          "gc5035mipi_raw"
+#define SENSOR_DRVNAME_GC5035_1_MIPI_RAW        "gc5035_1_mipi_raw"
+#define SENSOR_DRVNAME_GC5035_M_1_BK            "gc5035_m_1_bk"
+#define SENSOR_DRVNAME_GC5035_M_1_WT            "gc5035_m_1_wt"
+#define SENSOR_DRVNAME_GC5036_MIPI_RAW          "gc5036mipi_raw"
+#define SENSOR_DRVNAME_GC5036_1_MIPI_RAW        "gc5036_1_mipi_raw"
+#define SENSOR_DRVNAME_GC5035_S_1_BK            "gc5035_s_1_bk"
+#define SENSOR_DRVNAME_GC5035_S_1_WT            "gc5035_s_1_wt"
 /*SP*/
 #define SENSOR_DRVNAME_SP0A19_YUV               "sp0a19_yuv"
 #define SENSOR_DRVNAME_SP2518_YUV               "sp2518_yuv"
@@ -486,4 +502,8 @@
 
 #define mDELAY(ms)     mdelay(ms)
 #define uDELAY(us)       udelay(us)
+
+extern int camera_assistant_power_on(void);
+extern void camera_assistant_power_off(void);
+
 #endif              /* _KD_IMGSENSOR_H */

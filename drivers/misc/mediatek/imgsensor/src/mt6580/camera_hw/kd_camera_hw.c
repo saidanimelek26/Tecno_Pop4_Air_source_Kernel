@@ -26,6 +26,8 @@
 #include "kd_imgsensor_define.h"
 #include "kd_camera_feature.h"
 #include <linux/regulator/consumer.h>
+#include <mt-plat/upmu_common.h>
+#include <mt-plat/mt_gpio.h>
 
 /******************************************************************************
  * Debug configuration
@@ -189,6 +191,32 @@ int mtkcam_gpio_set(int PinIdx, int PwrType, int Val)
 }
 
 
+static bool is_gc5035_family_sensor(const char *currSensorName)
+{
+	if (!currSensorName)
+		return false;
+
+	return (strcmp(SENSOR_DRVNAME_GC5035_MIPI_RAW, currSensorName) == 0 ||
+		strcmp(SENSOR_DRVNAME_GC5035_1_MIPI_RAW, currSensorName) == 0 ||
+		strcmp(SENSOR_DRVNAME_GC5035_M_1_BK, currSensorName) == 0 ||
+		strcmp(SENSOR_DRVNAME_GC5035_M_1_WT, currSensorName) == 0 ||
+		strcmp(SENSOR_DRVNAME_GC5036_MIPI_RAW, currSensorName) == 0 ||
+		strcmp(SENSOR_DRVNAME_GC5036_1_MIPI_RAW, currSensorName) == 0 ||
+		strcmp(SENSOR_DRVNAME_GC5035_S_1_BK, currSensorName) == 0 ||
+		strcmp(SENSOR_DRVNAME_GC5035_S_1_WT, currSensorName) == 0);
+}
+
+static bool is_gc5035_main_assist_sensor(const char *currSensorName)
+{
+	if (!currSensorName)
+		return false;
+
+	return (strcmp(SENSOR_DRVNAME_GC5035_MIPI_RAW, currSensorName) == 0 ||
+		strcmp(SENSOR_DRVNAME_GC5035_1_MIPI_RAW, currSensorName) == 0 ||
+		strcmp(SENSOR_DRVNAME_GC5035_M_1_BK, currSensorName) == 0 ||
+		strcmp(SENSOR_DRVNAME_GC5035_M_1_WT, currSensorName) == 0);
+}
+
 int kdCISModulePowerOn(enum CAMERA_DUAL_CAMERA_SENSOR_ENUM SensorIdx,
 				char *currSensorName, BOOL On, char *mode_name)
 {
@@ -266,7 +294,56 @@ int kdCISModulePowerOn(enum CAMERA_DUAL_CAMERA_SENSOR_ENUM SensorIdx,
 
 		PK_DBG("[PowerON]pinSetIdx:%d, currSensorName: %s\n", pinSetIdx, currSensorName);
 
-		if ((currSensorName && (0 == strcmp(currSensorName, "imx135mipiraw"))) ||
+		if (is_gc5035_family_sensor(currSensorName)) {
+			if (pinSetIdx == 0 && is_gc5035_main_assist_sensor(currSensorName))
+				ISP_MCLK1_EN(0);
+
+			pmic_set_register_value(PMIC_RG_VCAMA_FBSEL, 1);
+
+			if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMPDN])
+				mtkcam_gpio_set(pinSetIdx, CAMPDN,
+						pinSet[pinSetIdx][IDX_PS_CMPDN + IDX_PS_OFF]);
+
+			if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMRST])
+				mtkcam_gpio_set(pinSetIdx, CAMRST,
+						pinSet[pinSetIdx][IDX_PS_CMRST + IDX_PS_OFF]);
+
+			if (TRUE != _hwPowerOn(VCAMIO, VOL_1800)) {
+				PK_DBG("[CAMERA SENSOR] Fail to enable IO power (VCAM_IO)\n");
+				goto _kdCISModulePowerOn_exit_;
+			}
+
+			if (TRUE != _hwPowerOn(VCAMD, VOL_1200)) {
+				PK_DBG("[CAMERA SENSOR] Fail to enable digital power (VCAM_D)\n");
+				goto _kdCISModulePowerOn_exit_;
+			}
+
+			if (TRUE != _hwPowerOn(VCAMA, VOL_2800)) {
+				PK_DBG("[CAMERA SENSOR] Fail to enable analog power (VCAM_A)\n");
+				goto _kdCISModulePowerOn_exit_;
+			}
+			mdelay(5);
+
+			if (TRUE != _hwPowerOn(VCAMAF, VOL_2800)) {
+				PK_DBG("[CAMERA SENSOR] Fail to enable AF power (VCAM_AF)\n");
+				goto _kdCISModulePowerOn_exit_;
+			}
+
+			if (pinSetIdx == 0 && is_gc5035_main_assist_sensor(currSensorName))
+				ISP_MCLK1_EN(1);
+
+			mdelay(1);
+
+			if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMPDN])
+				mtkcam_gpio_set(pinSetIdx, CAMPDN,
+						pinSet[pinSetIdx][IDX_PS_CMPDN + IDX_PS_ON]);
+			mdelay(1);
+
+			if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMRST])
+				mtkcam_gpio_set(pinSetIdx, CAMRST,
+						pinSet[pinSetIdx][IDX_PS_CMRST + IDX_PS_ON]);
+			mdelay(5);
+		} else if ((currSensorName && (0 == strcmp(currSensorName, "imx135mipiraw"))) ||
 		    (currSensorName && (0 == strcmp(currSensorName, "imx220mipiraw")))) {
 			/* First Power Pin low and Reset Pin Low */
 			if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMPDN])
@@ -599,7 +676,45 @@ int kdCISModulePowerOn(enum CAMERA_DUAL_CAMERA_SENSOR_ENUM SensorIdx,
 		else if (pinSetIdx == 1)
 			ISP_MCLK2_EN(0);
 
-		if ((currSensorName && (0 == strcmp(currSensorName, "imx135mipiraw"))) ||
+		if (is_gc5035_family_sensor(currSensorName)) {
+			if (pinSetIdx == 0 && is_gc5035_main_assist_sensor(currSensorName))
+				mt_set_gpio_out(3 | 0x80000000, GPIO_OUT_ONE);
+
+			pmic_set_register_value(PMIC_RG_VCAMA_FBSEL, 0);
+
+			if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMPDN])
+				mtkcam_gpio_set(pinSetIdx, CAMPDN,
+						pinSet[pinSetIdx][IDX_PS_CMPDN + IDX_PS_OFF]);
+
+			if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMRST])
+				mtkcam_gpio_set(pinSetIdx, CAMRST,
+						pinSet[pinSetIdx][IDX_PS_CMRST + IDX_PS_ON]);
+
+			if (TRUE != _hwPowerDown(VCAMA)) {
+				PK_DBG("[CAMERA SENSOR] Fail to OFF analog power (VCAM_A)\n");
+				goto _kdCISModulePowerOn_exit_;
+			}
+
+			if (TRUE != _hwPowerDown(VCAMIO)) {
+				PK_DBG("[CAMERA SENSOR] Fail to OFF digital power (VCAM_IO)\n");
+				goto _kdCISModulePowerOn_exit_;
+			}
+
+			if (TRUE != _hwPowerDown(VCAMD)) {
+				PK_DBG("[CAMERA SENSOR] Fail to OFF core power (VCAM_D)\n");
+				goto _kdCISModulePowerOn_exit_;
+			}
+
+			if (TRUE != _hwPowerDown(VCAMAF)) {
+				PK_DBG("[CAMERA SENSOR] Fail to OFF AF power (VCAM_AF)\n");
+				goto _kdCISModulePowerOn_exit_;
+			}
+
+			if (pinSetIdx == 0 && is_gc5035_main_assist_sensor(currSensorName)) {
+				mdelay(25);
+				mt_set_gpio_out(3 | 0x80000000, GPIO_OUT_ZERO);
+			}
+		} else if ((currSensorName && (0 == strcmp(currSensorName, "imx135mipiraw"))) ||
 		    (currSensorName && (0 == strcmp(currSensorName, "imx220mipiraw")))) {
 			/* Set Power Pin low and Reset Pin Low */
 			if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMPDN])
@@ -969,7 +1084,7 @@ int kdCISModulePowerOn(CAMERA_DUAL_CAMERA_SENSOR_ENUM SensorIdx, char *currSenso
 
 		PK_DBG("[PowerON]pinSetIdx:%d, currSensorName: %s\n", pinSetIdx, currSensorName);
 
-		if ((currSensorName && (0 == strcmp(currSensorName, "imx135mipiraw"))) ||
+		if if ((currSensorName && (0 == strcmp(currSensorName, "imx135mipiraw"))) ||
 		    (currSensorName && (0 == strcmp(currSensorName, "imx220mipiraw")))) {
 			/* First Power Pin low and Reset Pin Low */
 			if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMPDN]) {
@@ -1671,7 +1786,7 @@ int kdCISModulePowerOn(CAMERA_DUAL_CAMERA_SENSOR_ENUM SensorIdx, char *currSenso
 		else
 			ISP_MCLK2_EN(0);
 
-		if ((currSensorName && (0 == strcmp(currSensorName, "imx135mipiraw"))) ||
+		if if ((currSensorName && (0 == strcmp(currSensorName, "imx135mipiraw"))) ||
 		    (currSensorName && (0 == strcmp(currSensorName, "imx220mipiraw")))) {
 
 
