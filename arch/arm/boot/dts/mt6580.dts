@@ -796,6 +796,10 @@
 			/* clock-names = "btifc","apdmac";*/
 		};
 
+		sunwave_fp: sunwave_fp {
+			compatible = "mediatek,sunwave_fp";
+		};
+
 		gps {
 			compatible = "mediatek,gps";
 		};
@@ -1315,6 +1319,9 @@
 		};
 		sensorHub@0 {
 			compatible = "mediatek,sensorHub";
+		};
+		strobe_main@0 {
+			compatible = "mediatek,strobe_main";
 		};
 		shf@0 {
 			compatible = "mediatek,shf";
