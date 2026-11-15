@@ -22,8 +22,10 @@ subdir-ccflags-y += -I$(srctree)/drivers/mmc/host/mediatek/$(MTK_PLATFORM)
 obj-$(CONFIG_MTK_EMI) += emi/
 obj-$(CONFIG_MTK_ICE_DEBUG) +=ice_debug/
 obj-$(CONFIG_MTK_BASE_POWER) += base/
+obj-y += hw_info/
 
 
+obj-$(CONFIG_SAGEREAL_CAMERA_ASSISTANT_DRV) += camera_assistant/
 obj-$(CONFIG_MTK_ACCDET) += accdet/
 obj-$(CONFIG_MTK_EMI_MPU) += emi_mpu/
 obj-$(CONFIG_MTK_EMI_MBW) += emi_mbw/

@@ -1,0 +1,5 @@
+config GSENSOR_SC7A20
+	bool "SC7A20 for MediaTek package"
+	default n
+	help
+	  Say Y here if you have Silan SC7A20 3-axis accelerometer.

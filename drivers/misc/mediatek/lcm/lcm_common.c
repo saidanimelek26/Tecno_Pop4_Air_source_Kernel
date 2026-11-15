@@ -1,3 +1,6 @@
+#include <linux/module.h>
+#include <linux/export.h>
+
 #if defined(MTK_LCM_DEVICE_TREE_SUPPORT)
 #include <linux/string.h>
 #include <linux/wait.h>
@@ -1065,3 +1068,21 @@ LCM_DRIVER lcm_common_drv = {
 	.parse_dts = lcm_common_parse_dts,
 };
 #endif
+
+int display_bias_regulator_init(void)
+{
+	return 0;
+}
+EXPORT_SYMBOL(display_bias_regulator_init);
+
+int display_bias_enable(void)
+{
+	return 0;
+}
+EXPORT_SYMBOL(display_bias_enable);
+
+int display_bias_disable(void)
+{
+	return 0;
+}
+EXPORT_SYMBOL(display_bias_disable);

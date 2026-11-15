@@ -163,6 +163,39 @@ module_param(recovery_done, uint, 0644); /* rw-r--r-- */
 MODULE_PARM_DESC(recovery_done,
 		 "recovery_done status(0 = complete, 1 = on-going, 2 = error)");
 
+static char segment_efuse_buf[64];
+
+static int segment_efuse_sta_show(struct seq_file *m, void *v)
+{
+	seq_printf(m, "%s\n", sec_schip_enabled() ? "1" : "0");
+	return 0;
+}
+
+static int segment_efuse_sta_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, segment_efuse_sta_show, NULL);
+}
+
+static ssize_t segment_efuse_sta_write(struct file *file, const char __user *buf,
+				       size_t count, loff_t *ppos)
+{
+	if (count > 63)
+		return -EINVAL;
+	if (copy_from_user(segment_efuse_buf, buf, count))
+		return -EFAULT;
+	segment_efuse_buf[count] = '\0';
+	return count;
+}
+
+static const struct file_operations segment_efuse_sta_fops = {
+	.owner = THIS_MODULE,
+	.open = segment_efuse_sta_open,
+	.read = seq_read,
+	.write = segment_efuse_sta_write,
+	.llseek = seq_lseek,
+	.release = single_release,
+};
+
 /* SEC DRIVER INIT */
 static int sec_init(struct platform_device *dev)
 {
@@ -223,6 +256,7 @@ static int sec_init(struct platform_device *dev)
 	spin_lock_init(&sec.lock);
 
 	proc_create("rid", 0444, NULL, &sec_proc_rid_fops);
+	proc_create("segment_efuse_sta", 0644, NULL, &segment_efuse_sta_fops);
 
 #ifdef MTK_SECURITY_MODULE_LITE
 	pr_debug("[MASP Lite] version '%s%s', enter.\n",
@@ -247,6 +281,7 @@ exit:
  **************************************************************************/
 static void sec_exit(void)
 {
+	remove_proc_entry("segment_efuse_sta", NULL);
 	remove_proc_entry("rid", NULL);
 	cdev_del(&sec_dev);
 	unregister_chrdev_region(sec.id, 1);
