@@ -56,6 +56,8 @@
 #include <sound/core.h>
 #include <sound/pcm.h>
 #include <sound/soc.h>
+#include <linux/proc_fs.h>
+#include <mt-plat/mt_gpio.h>
 #if !defined(CONFIG_MTK_LEGACY)
 #include <linux/gpio.h>
 #include <linux/pinctrl/consumer.h>
@@ -4034,11 +4036,95 @@ static struct platform_driver mtk_codec_6350_driver = {
 static struct platform_device *soc_mtk_codec6350_dev;
 #endif
 
+static ssize_t modem_type_read_proc(struct file *file, char __user *buf,
+				     size_t count, loff_t *pos)
+{
+	char page[100];
+	int len;
+	int gpio0, gpio1, gpio2, gpio_value;
+
+	if (*pos > 0)
+		return 0;
+
+	gpio0 = mt_get_gpio_in(0x80000054);
+	gpio1 = mt_get_gpio_in(0x80000053);
+	gpio2 = mt_get_gpio_in(0x80000010);
+	gpio_value = (gpio2 << 2) | (gpio1 << 1) | gpio0;
+
+	pr_info("gpio0_value = %d, gpio1_value = %d, gpio2_value = %d, gpio_value = %d\n",
+		gpio0, gpio1, gpio2, gpio_value);
+
+	len = sprintf(page, "%d\n", gpio_value);
+	if (copy_to_user(buf, page, len))
+		return -EFAULT;
+
+	*pos += len;
+	return len;
+}
+
+static ssize_t extpa_powerctrl_write_proc(struct file *file,
+					  const char __user *buf,
+					  size_t count, loff_t *pos)
+{
+	char page[64];
+	int gpio_num = 0, power_state = 0;
+
+	memset(page, 0, sizeof(page));
+	if (count > 64)
+		return -EINVAL;
+
+	if (copy_from_user(page, buf, count))
+		return -EFAULT;
+
+	if (sscanf(page, "%d %d", &gpio_num, &power_state) > 0) {
+		mt_set_gpio_mode(gpio_num | 0x80000000, 0);
+		mt_set_gpio_dir(gpio_num | 0x80000000, 1);
+		mt_set_gpio_out(gpio_num | 0x80000000, power_state);
+		pr_info("gpio_num[%d] power status=%d\n", gpio_num, power_state);
+	}
+
+	return count;
+}
+
+static ssize_t extpa_powerctrl_read_proc(struct file *file, char __user *buf,
+					 size_t count, loff_t *pos)
+{
+	char page[100];
+	int len;
+	int power_state;
+
+	if (*pos > 0)
+		return 0;
+
+	power_state = mt_get_gpio_out(0x80000052);
+	pr_info("extpa_powerctrl_read_proc power_state = %d\n", power_state);
+
+	len = sprintf(page, "power_state: %s\n", power_state ? "On" : "Off");
+	if (copy_to_user(buf, page, len))
+		return -EFAULT;
+
+	*pos += len;
+	return len;
+}
+
+static const struct file_operations modem_type_fops = {
+	.owner = THIS_MODULE,
+	.read = modem_type_read_proc,
+};
+
+static const struct file_operations extpa_powerctrl_fops = {
+	.owner = THIS_MODULE,
+	.read = extpa_powerctrl_read_proc,
+	.write = extpa_powerctrl_write_proc,
+};
+
 static int __init mtk_mt6350_codec_init(void)
 {
 	int ret = 0;
 
 	pr_warn("%s:\n", __func__);
+	proc_create("driver/extpa_powctrl", 0666, NULL, &extpa_powerctrl_fops);
+	proc_create("driver/modem_type", 0666, NULL, &modem_type_fops);
 #ifdef CONFIG_OF
 	/* Auddrv_getGPIO_info(); */
 #else
@@ -4062,6 +4148,8 @@ module_init(mtk_mt6350_codec_init);
 static void __exit mtk_mt6350_codec_exit(void)
 {
 	pr_warn("%s:\n", __func__);
+	remove_proc_entry("driver/modem_type", NULL);
+	remove_proc_entry("driver/extpa_powctrl", NULL);
 
 	platform_driver_unregister(&mtk_codec_6350_driver);
 }
