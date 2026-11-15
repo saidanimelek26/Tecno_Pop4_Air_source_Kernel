@@ -261,6 +261,18 @@ static void disable_clk(void)
 #endif
 }
 
+void mt_spi_enable_clk(void)
+{
+	enable_clk();
+}
+EXPORT_SYMBOL(mt_spi_enable_clk);
+
+void mt_spi_disable_clk(void)
+{
+	disable_clk();
+}
+EXPORT_SYMBOL(mt_spi_disable_clk);
+
 static int is_pause_mode(struct spi_message *msg)
 {
 	struct mt_chip_conf *conf;

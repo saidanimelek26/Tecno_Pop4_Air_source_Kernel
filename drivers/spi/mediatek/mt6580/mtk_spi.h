@@ -105,4 +105,7 @@ struct mt_chip_conf {
 	enum spi_tckdly tckdly;
 };
 
+void mt_spi_enable_clk(void);
+void mt_spi_disable_clk(void);
+
 #endif

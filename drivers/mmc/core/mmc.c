@@ -33,6 +33,9 @@
 #define DEFAULT_CMD6_TIMEOUT_MS	500
 #define MIN_CACHE_EN_TIMEOUT_MS 1600
 
+extern void hw_info_set_mmc(unsigned int manfid, const char *prod_name);
+
+
 static const unsigned int tran_exp[] = {
 	10000,		100000,		1000000,	10000000,
 	0,		0,		0,		0
@@ -1683,6 +1686,7 @@ static int mmc_init_card(struct mmc_host *host, u32 ocr,
 		err = mmc_decode_cid(card);
 		if (err)
 			goto free_card;
+		hw_info_set_mmc(card->cid.manfid, card->cid.prod_name);
 	}
 
 	/*
