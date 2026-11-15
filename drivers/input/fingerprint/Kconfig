@@ -40,6 +40,21 @@ config GOODIX_SENSOR_TYPE
 	help
 	  Must input sensor type, or default is GF316M GF318M GF3118M GF518M GF5118M GF516M GF816M
 	  GF3208 GF3206 GF3266 GF3288 GF5206 GF5216 GF5208
+
+config SUNWAVE_FP
+	bool "Sunwave Fingerprint Sensor"
+	depends on MTK_FINGERPRINT_SUPPORT
+	default n
+	help
+	  Say Y here to enable support for Sunwave SPI fingerprint sensors.
+
+config FOCALTECH_FINGERPRINT_EDISON
+	bool "FocalTech Fingerprint Sensor (Edison / MT6580)"
+	depends on MTK_FINGERPRINT_SUPPORT
+	default n
+	help
+	  Say Y here to enable support for FocalTech SPI fingerprint sensors.
+
 endif
 endif
 endmenu

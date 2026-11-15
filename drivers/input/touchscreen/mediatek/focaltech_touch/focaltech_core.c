@@ -52,7 +52,9 @@
 #define GTP_enable_power_PORT 2//add by cassy
 struct pinctrl *pinctrl3;
 struct pinctrl_state *focal_power_output1,*focal_power_output0;
+#if !FTS_POWER_SOURCE_CUST_EN
 static void tpd_power_on(int flag);
+#endif
 
 //add by cassy end
 
@@ -91,6 +93,7 @@ static void fts_release_all_finger(void);
 *****************************************************************************/
 static const struct i2c_device_id fts_tpd_id[] = {{FTS_DRIVER_NAME, 0}, {} };
 static const struct of_device_id fts_dt_match[] = {
+    {.compatible = "mediatek,cap_touch"},
     {.compatible = "mediatek,ft_cap_touch"},
     {},
 };
@@ -347,6 +350,11 @@ int fts_power_init(void)
     int ret;
     /*set TP volt*/
     tpd->reg = regulator_get(tpd->tpd_dev, "vtouch");
+    if (IS_ERR(tpd->reg)) {
+        FTS_ERROR("[POWER]Failed to get vtouch regulator");
+        tpd->reg = NULL;
+        return 0;
+    }
     ret = regulator_set_voltage(tpd->reg, 3000000, 3000000);
     if (ret != 0) {
         FTS_ERROR("[POWER]Failed to set voltage of regulator,ret=%d!", ret);
@@ -366,6 +374,7 @@ void fts_power_suspend(void)
 {
     int ret;
 
+    if (!tpd->reg) return;
     ret = regulator_disable(tpd->reg);
     if (ret != 0)
         FTS_ERROR("[POWER]Failed to disable regulator when suspend ret=%d!", ret);
@@ -917,13 +926,10 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
         FTS_ERROR("failed to create fts workqueue");
     }
 	
-	//add by cassy begin
-		tpd_get_gpio_info_focal(client);
-		//add by cassy end
-		
-//add by allen start
-tpd_power_on(1);
-//add by allen end
+#if !FTS_POWER_SOURCE_CUST_EN
+	tpd_get_gpio_info_focal(client);
+	tpd_power_on(1);
+#endif
     spin_lock_init(&ts_data->irq_lock);
     mutex_init(&ts_data->report_mutex);
     /* Init I2C */
@@ -1112,10 +1118,13 @@ void tpd_gpio_output_focal(int pin, int level)
 {
 	//mutex_lock(&tpd_set_gpio_mutex);
 	if (pin == 2) {
-		if (level)
-			pinctrl_select_state(pinctrl3, focal_power_output1);
-		else
-			pinctrl_select_state(pinctrl3, focal_power_output0);
+		if (level) {
+			if (!IS_ERR_OR_NULL(focal_power_output1))
+				pinctrl_select_state(pinctrl3, focal_power_output1);
+		} else {
+			if (!IS_ERR_OR_NULL(focal_power_output0))
+				pinctrl_select_state(pinctrl3, focal_power_output0);
+		}
 	} 
 	//mutex_unlock(&tpd_set_gpio_mutex);
 }

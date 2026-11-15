@@ -117,13 +117,13 @@
  * Gesture function enable
  * default: disable
  */
-#define FTS_GESTURE_EN                          0
+#define FTS_GESTURE_EN                          1
 
 /*
  * ESD check & protection
  * default: disable
  */
-#define FTS_ESDCHECK_EN                         0
+#define FTS_ESDCHECK_EN                         1
 
 /*
  * Production test enable
@@ -135,23 +135,23 @@
  * Glove mode enable
  * 1: enable, 0:disable(default)
  */
-#define FTS_GLOVE_EN                            0
+#define FTS_GLOVE_EN                            1
 /*
  * cover enable
  * 1: enable, 0:disable(default)
  */
-#define FTS_COVER_EN                            0
+#define FTS_COVER_EN                            1
 /*
  * Charger enable
  * 1: enable, 0:disable(default)
  */
-#define FTS_CHARGER_EN                          0
+#define FTS_CHARGER_EN                          1
 
 /*
  * Proximity sensor
  * default: disable
  */
-#define FTS_PSENSOR_EN                          0
+#define FTS_PSENSOR_EN                          1
 /*
  * Nodes for tools, please keep enable
  */
@@ -163,7 +163,7 @@
  * enable it when customer need control TP power
  * default: disable
  */
-#define FTS_POWER_SOURCE_CUST_EN                0//modify by cassy from 0 to 1
+#define FTS_POWER_SOURCE_CUST_EN                1
 
 
 /****************************************************/
